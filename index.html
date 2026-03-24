@@ -14,14 +14,25 @@
       justify-content: center;
       background: #e8e8e8;
       font-family: -apple-system, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+      padding: 24px;
     }
 
+    .app {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    /* ── Calculator ── */
     .calculator {
       background: #fff;
       border-radius: 28px;
       padding: 24px;
       width: 320px;
       box-shadow: 0 8px 40px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+      flex-shrink: 0;
     }
 
     .display {
@@ -86,87 +97,208 @@
 
     button:active { transform: scale(0.93); filter: brightness(0.93); }
 
-    /* Number buttons */
-    .btn-num {
-      background: #f0f0f0;
-      color: #111;
-    }
+    .btn-num { background: #f0f0f0; color: #111; }
     .btn-num:hover { background: #e8e8e8; }
 
-    /* Zero spans 2 columns */
-    .btn-zero {
-      grid-column: span 2;
-      text-align: left;
-      padding-left: 28px;
-    }
+    .btn-zero { grid-column: span 2; text-align: left; padding-left: 28px; }
 
-    /* Operator buttons */
-    .btn-op {
-      background: #d4f840;
-      color: #111;
-      font-weight: 600;
-    }
+    .btn-op { background: #d4f840; color: #111; font-weight: 600; }
     .btn-op:hover { background: #c8f030; }
 
-    /* Function buttons (AC, +/-, %) */
-    .btn-fn {
-      background: #e4e4e4;
-      color: #555;
-      font-weight: 500;
-    }
+    .btn-fn { background: #e4e4e4; color: #555; font-weight: 500; }
     .btn-fn:hover { background: #d8d8d8; }
 
-    /* Equals */
-    .btn-eq {
-      background: #d4f840;
-      color: #111;
-      font-size: 22px;
-      font-weight: 600;
-    }
+    .btn-eq { background: #d4f840; color: #111; font-size: 22px; font-weight: 600; }
     .btn-eq:hover { background: #c8f030; }
+
+    /* ── Whiteboard ── */
+    .whiteboard {
+      background: #fff;
+      border-radius: 28px;
+      padding: 20px;
+      width: 400px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      flex-shrink: 0;
+    }
+
+    .wb-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .wb-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #111;
+      letter-spacing: -0.2px;
+    }
+
+    .wb-tools {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .wb-tool {
+      height: 32px;
+      min-width: 32px;
+      border-radius: 10px;
+      border: none;
+      background: #f0f0f0;
+      color: #444;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 10px;
+      transition: background 0.12s, transform 0.08s;
+    }
+
+    .wb-tool:active { transform: scale(0.92); }
+    .wb-tool:hover { background: #e4e4e4; }
+    .wb-tool.active { background: #d4f840; color: #111; }
+    .wb-tool-clear { background: #f0f0f0; }
+    .wb-tool-clear:hover { background: #ffe0e0; color: #c00; }
+
+    .wb-canvas-wrap {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #f9f9f9;
+      border: 1.5px solid #ececec;
+      flex: 1;
+    }
+
+    .wb-canvas-wrap canvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #draw-canvas  { cursor: crosshair; }
+    #result-canvas { pointer-events: none; }
+
+    /* spacer so the wrap has natural height */
+    .wb-canvas-sizer { display: block; width: 100%; height: 420px; }
+
+    .wb-status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 22px;
+    }
+
+    .wb-status {
+      font-size: 12px;
+      color: #999;
+      letter-spacing: 0.2px;
+    }
+
+    .wb-status.recognized { color: #555; }
+    .wb-status.result     { color: #6ab000; font-weight: 600; }
+    .wb-status.error      { color: #c00; }
+
+    .wb-spinner {
+      width: 14px; height: 14px;
+      border: 2px solid #e0e0e0;
+      border-top-color: #d4f840;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    .wb-spinner.active { display: block; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .wb-hint {
+      font-size: 11px;
+      color: #bbb;
+      text-align: center;
+      letter-spacing: 0.2px;
+    }
   </style>
 </head>
 <body>
-<div class="calculator">
-  <div class="display">
-    <div class="expression" id="expression"></div>
-    <div class="result" id="result">0</div>
+<div class="app">
+
+  <!-- ── Calculator ── -->
+  <div class="calculator">
+    <div class="display">
+      <div class="expression" id="expression"></div>
+      <div class="result" id="result">0</div>
+    </div>
+    <div class="buttons">
+      <button class="btn-fn" data-action="clear">AC</button>
+      <button class="btn-fn" data-action="sign">+/−</button>
+      <button class="btn-fn" data-action="percent">%</button>
+      <button class="btn-op" data-action="op" data-value="÷">÷</button>
+
+      <button class="btn-num" data-action="digit" data-value="7">7</button>
+      <button class="btn-num" data-action="digit" data-value="8">8</button>
+      <button class="btn-num" data-action="digit" data-value="9">9</button>
+      <button class="btn-op" data-action="op" data-value="×">×</button>
+
+      <button class="btn-num" data-action="digit" data-value="4">4</button>
+      <button class="btn-num" data-action="digit" data-value="5">5</button>
+      <button class="btn-num" data-action="digit" data-value="6">6</button>
+      <button class="btn-op" data-action="op" data-value="−">−</button>
+
+      <button class="btn-num" data-action="digit" data-value="1">1</button>
+      <button class="btn-num" data-action="digit" data-value="2">2</button>
+      <button class="btn-num" data-action="digit" data-value="3">3</button>
+      <button class="btn-op" data-action="op" data-value="+">+</button>
+
+      <button class="btn-num btn-zero" data-action="digit" data-value="0">0</button>
+      <button class="btn-num" data-action="dot">.</button>
+      <button class="btn-eq" data-action="equals">=</button>
+    </div>
   </div>
-  <div class="buttons">
-    <button class="btn-fn" data-action="clear">AC</button>
-    <button class="btn-fn" data-action="sign">+/−</button>
-    <button class="btn-fn" data-action="percent">%</button>
-    <button class="btn-op" data-action="op" data-value="÷">÷</button>
 
-    <button class="btn-num" data-action="digit" data-value="7">7</button>
-    <button class="btn-num" data-action="digit" data-value="8">8</button>
-    <button class="btn-num" data-action="digit" data-value="9">9</button>
-    <button class="btn-op" data-action="op" data-value="×">×</button>
+  <!-- ── Whiteboard ── -->
+  <div class="whiteboard">
+    <div class="wb-header">
+      <span class="wb-title">Math Notes</span>
+      <div class="wb-tools">
+        <button class="wb-tool active" id="wb-pen-sm" title="Thin pen">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </button>
+        <button class="wb-tool" id="wb-pen-lg" title="Thick pen">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </button>
+        <button class="wb-tool" id="wb-eraser" title="Eraser">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
+        </button>
+        <button class="wb-tool wb-tool-clear" id="wb-clear" title="Clear all">Clear</button>
+      </div>
+    </div>
 
-    <button class="btn-num" data-action="digit" data-value="4">4</button>
-    <button class="btn-num" data-action="digit" data-value="5">5</button>
-    <button class="btn-num" data-action="digit" data-value="6">6</button>
-    <button class="btn-op" data-action="op" data-value="−">−</button>
+    <div class="wb-canvas-wrap">
+      <span class="wb-canvas-sizer"></span>
+      <canvas id="draw-canvas"></canvas>
+      <canvas id="result-canvas"></canvas>
+    </div>
 
-    <button class="btn-num" data-action="digit" data-value="1">1</button>
-    <button class="btn-num" data-action="digit" data-value="2">2</button>
-    <button class="btn-num" data-action="digit" data-value="3">3</button>
-    <button class="btn-op" data-action="op" data-value="+">+</button>
-
-    <button class="btn-num btn-zero" data-action="digit" data-value="0">0</button>
-    <button class="btn-num" data-action="dot">.</button>
-    <button class="btn-eq" data-action="equals">=</button>
+    <div class="wb-status-bar">
+      <div class="wb-spinner" id="wb-spinner"></div>
+      <span class="wb-status" id="wb-status">Draw a math expression ending with  =</span>
+    </div>
   </div>
+
 </div>
 
+<!-- ── Calculator JS ── -->
 <script>
   const resultEl = document.getElementById('result');
-  const exprEl = document.getElementById('expression');
+  const exprEl   = document.getElementById('expression');
 
-  let current = '0';
-  let previous = null;
-  let operator = null;
-  let justEvaled = false;
+  let current = '0', previous = null, operator = null, justEvaled = false;
 
   function updateDisplay() {
     resultEl.textContent = current;
@@ -174,9 +306,7 @@
     resultEl.className = 'result' + (len > 12 ? ' xsmall' : len > 9 ? ' small' : '');
   }
 
-  function setExpression(text) {
-    exprEl.textContent = text;
-  }
+  function setExpression(text) { exprEl.textContent = text; }
 
   function applyOp(a, op, b) {
     a = parseFloat(a); b = parseFloat(b);
@@ -190,8 +320,7 @@
 
   function formatNum(n) {
     if (n === 'Error') return 'Error';
-    let s = parseFloat(n.toPrecision(12)).toString();
-    return s;
+    return parseFloat(n.toPrecision(12)).toString();
   }
 
   document.querySelector('.buttons').addEventListener('click', e => {
@@ -203,28 +332,21 @@
       if (justEvaled) { current = value; justEvaled = false; }
       else current = current === '0' ? value : current + value;
       updateDisplay();
-    }
-    else if (action === 'dot') {
+    } else if (action === 'dot') {
       if (justEvaled) { current = '0.'; justEvaled = false; }
       else if (!current.includes('.')) current += '.';
       updateDisplay();
-    }
-    else if (action === 'op') {
+    } else if (action === 'op') {
       justEvaled = false;
       if (operator && previous !== null) {
         const res = applyOp(previous, operator, current);
         if (res === 'Error') { current = 'Error'; previous = null; operator = null; setExpression(''); updateDisplay(); return; }
-        previous = formatNum(res);
-        current = previous;
-        updateDisplay();
-      } else {
-        previous = current;
-      }
+        previous = formatNum(res); current = previous; updateDisplay();
+      } else { previous = current; }
       operator = value;
       setExpression(`${previous} ${operator}`);
       current = '0';
-    }
-    else if (action === 'equals') {
+    } else if (action === 'equals') {
       if (operator && previous !== null) {
         const expr = `${previous} ${operator} ${current}`;
         const res = applyOp(previous, operator, current);
@@ -234,28 +356,22 @@
         previous = null; operator = null; justEvaled = true;
         updateDisplay();
       }
-    }
-    else if (action === 'clear') {
+    } else if (action === 'clear') {
       current = '0'; previous = null; operator = null; justEvaled = false;
       setExpression(''); updateDisplay();
-    }
-    else if (action === 'sign') {
+    } else if (action === 'sign') {
       if (current !== '0' && current !== 'Error') {
         current = current.startsWith('-') ? current.slice(1) : '-' + current;
         updateDisplay();
       }
-    }
-    else if (action === 'percent') {
+    } else if (action === 'percent') {
       if (current !== 'Error') { current = formatNum(parseFloat(current) / 100); updateDisplay(); }
     }
   });
 
   document.addEventListener('keydown', e => {
-    const map = {
-      '0':'0','1':'1','2':'2','3':'3','4':'4','5':'5','6':'6','7':'7','8':'8','9':'9',
-      '.':'.','Enter':'=','=':'=','Backspace':'backspace',
-      '+':'+','-':'−','*':'×','/':'÷','Escape':'clear','%':'%'
-    };
+    const map = { '0':'0','1':'1','2':'2','3':'3','4':'4','5':'5','6':'6','7':'7','8':'8','9':'9',
+      '.':'.','Enter':'=','=':'=','Backspace':'backspace','+':'+','-':'−','*':'×','/':'÷','Escape':'clear','%':'%' };
     const k = map[e.key];
     if (!k) return;
     e.preventDefault();
@@ -271,6 +387,266 @@
       updateDisplay();
     }
   });
+</script>
+
+<!-- ── Whiteboard JS ── -->
+<script>
+(function () {
+  const drawCanvas   = document.getElementById('draw-canvas');
+  const resultCanvas = document.getElementById('result-canvas');
+  const wrap         = document.querySelector('.wb-canvas-wrap');
+  const statusEl     = document.getElementById('wb-status');
+  const spinnerEl    = document.getElementById('wb-spinner');
+
+  let dc = drawCanvas.getContext('2d');
+  let rc = resultCanvas.getContext('2d');
+
+  // ── Resize canvases to match wrapper ──
+  function resizeCanvases() {
+    const dpr = window.devicePixelRatio || 1;
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    [drawCanvas, resultCanvas].forEach(c => {
+      c.width  = w * dpr;
+      c.height = h * dpr;
+      c.style.width  = w + 'px';
+      c.style.height = h + 'px';
+    });
+    dc = drawCanvas.getContext('2d');
+    rc = resultCanvas.getContext('2d');
+    const dpr2 = window.devicePixelRatio || 1;
+    dc.scale(dpr2, dpr2);
+    rc.scale(dpr2, dpr2);
+    dc.fillStyle = '#f9f9f9';
+    dc.fillRect(0, 0, w, h);
+  }
+
+  // ── Tool state ──
+  let penSize = 3;
+  let isErasing = false;
+  let isDrawing = false;
+  let lastX = 0, lastY = 0;
+  let recognizeTimer = null;
+
+  // Bounding box of all drawn strokes (in CSS pixels)
+  let bbox = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
+  let hasStrokes = false;
+
+  function updateBbox(x, y) {
+    bbox.minX = Math.min(bbox.minX, x);
+    bbox.minY = Math.min(bbox.minY, y);
+    bbox.maxX = Math.max(bbox.maxX, x);
+    bbox.maxY = Math.max(bbox.maxY, y);
+    hasStrokes = true;
+  }
+
+  // ── Tool buttons ──
+  document.getElementById('wb-pen-sm').addEventListener('click', () => {
+    penSize = 3; isErasing = false;
+    setActiveTool('wb-pen-sm');
+  });
+  document.getElementById('wb-pen-lg').addEventListener('click', () => {
+    penSize = 7; isErasing = false;
+    setActiveTool('wb-pen-lg');
+  });
+  document.getElementById('wb-eraser').addEventListener('click', () => {
+    isErasing = true;
+    setActiveTool('wb-eraser');
+  });
+  document.getElementById('wb-clear').addEventListener('click', clearBoard);
+
+  function setActiveTool(id) {
+    ['wb-pen-sm','wb-pen-lg','wb-eraser'].forEach(tid => {
+      document.getElementById(tid).classList.toggle('active', tid === id);
+    });
+  }
+
+  function clearBoard() {
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    dc.fillStyle = '#f9f9f9';
+    dc.fillRect(0, 0, w, h);
+    rc.clearRect(0, 0, wrap.clientWidth, wrap.clientHeight);
+    bbox = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
+    hasStrokes = false;
+    clearTimeout(recognizeTimer);
+    setStatus('Draw a math expression ending with  =', '');
+  }
+
+  function setStatus(text, type) {
+    statusEl.textContent = text;
+    statusEl.className = 'wb-status' + (type ? ' ' + type : '');
+  }
+
+  // ── Drawing ──
+  function getPos(e) {
+    const rect = drawCanvas.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return { x: src.clientX - rect.left, y: src.clientY - rect.top };
+  }
+
+  function startDraw(e) {
+    e.preventDefault();
+    isDrawing = true;
+    const { x, y } = getPos(e);
+    lastX = x; lastY = y;
+    dc.beginPath();
+    dc.arc(x, y, (isErasing ? 16 : penSize) / 2, 0, Math.PI * 2);
+    dc.fillStyle = isErasing ? '#f9f9f9' : '#111';
+    dc.fill();
+    if (!isErasing) updateBbox(x, y);
+    clearTimeout(recognizeTimer);
+    // Clear old result overlay while drawing
+    rc.clearRect(0, 0, wrap.clientWidth, wrap.clientHeight);
+  }
+
+  function draw(e) {
+    if (!isDrawing) return;
+    e.preventDefault();
+    const { x, y } = getPos(e);
+
+    dc.beginPath();
+    dc.moveTo(lastX, lastY);
+    dc.lineTo(x, y);
+    dc.strokeStyle = isErasing ? '#f9f9f9' : '#111';
+    dc.lineWidth   = isErasing ? 32 : penSize;
+    dc.lineCap     = 'round';
+    dc.lineJoin    = 'round';
+    dc.stroke();
+
+    if (!isErasing) { updateBbox(x, y); updateBbox(lastX, lastY); }
+    lastX = x; lastY = y;
+  }
+
+  function endDraw(e) {
+    if (!isDrawing) return;
+    isDrawing = false;
+    if (hasStrokes && !isErasing) scheduleRecognize();
+  }
+
+  drawCanvas.addEventListener('pointerdown', startDraw);
+  drawCanvas.addEventListener('pointermove', draw);
+  drawCanvas.addEventListener('pointerup',   endDraw);
+  drawCanvas.addEventListener('pointerleave',endDraw);
+  drawCanvas.addEventListener('touchstart',  e => { e.preventDefault(); startDraw(e); }, { passive: false });
+  drawCanvas.addEventListener('touchmove',   e => { e.preventDefault(); draw(e); },      { passive: false });
+  drawCanvas.addEventListener('touchend',    endDraw);
+
+  // ── OCR + Math evaluation ──
+  let mathLoaded = false, tesseractLoaded = false;
+
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src; s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  async function ensureLibs() {
+    if (!mathLoaded) {
+      setStatus('Loading libraries…', '');
+      await loadScript('https://cdn.jsdelivr.net/npm/mathjs@13/package/dist/math.min.js');
+      mathLoaded = true;
+    }
+    if (!tesseractLoaded) {
+      await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js');
+      tesseractLoaded = true;
+    }
+  }
+
+  function scheduleRecognize() {
+    clearTimeout(recognizeTimer);
+    recognizeTimer = setTimeout(runRecognize, 1500);
+  }
+
+  async function runRecognize() {
+    try {
+      await ensureLibs();
+      setStatus('Recognizing…', '');
+      spinnerEl.classList.add('active');
+
+      // Crop canvas to drawn region + padding
+      const pad  = 24;
+      const cw   = wrap.clientWidth, ch = wrap.clientHeight;
+      const x1   = Math.max(0, bbox.minX - pad);
+      const y1   = Math.max(0, bbox.minY - pad);
+      const x2   = Math.min(cw, bbox.maxX + pad);
+      const y2   = Math.min(ch, bbox.maxY + pad);
+      const rw   = x2 - x1, rh = y2 - y1;
+
+      if (rw < 10 || rh < 10) { spinnerEl.classList.remove('active'); return; }
+
+      // Extract and upscale the region for better OCR
+      const tmp    = document.createElement('canvas');
+      const scale  = 3;
+      tmp.width    = rw * scale;
+      tmp.height   = rh * scale;
+      const tc     = tmp.getContext('2d');
+      tc.fillStyle = '#fff';
+      tc.fillRect(0, 0, tmp.width, tmp.height);
+      const dpr = window.devicePixelRatio || 1;
+      tc.drawImage(drawCanvas, x1 * dpr, y1 * dpr, rw * dpr, rh * dpr, 0, 0, tmp.width, tmp.height);
+
+      // OCR
+      const worker = await Tesseract.createWorker('eng');
+      await worker.setParameters({
+        tessedit_char_whitelist: '0123456789+-×÷*/=().^ ',
+        tessedit_pageseg_mode: '7',
+      });
+      const { data: { text } } = await worker.recognize(tmp);
+      await worker.terminate();
+
+      const raw = text.trim();
+      setStatus(`Recognized: "${raw}"`, 'recognized');
+
+      // Normalize for mathjs
+      const expr = raw
+        .replace(/\s+/g, '')
+        .replace(/×/g, '*')
+        .replace(/÷/g, '/')
+        .replace(/[−–]/g, '-')
+        .replace(/=$/, '');   // strip trailing =
+
+      if (!expr) { spinnerEl.classList.remove('active'); return; }
+
+      let evalResult;
+      try {
+        evalResult = window.math.evaluate(expr);
+        if (typeof evalResult === 'object') evalResult = evalResult.toString();
+        else evalResult = parseFloat(evalResult.toPrecision(10)).toString();
+      } catch (_) {
+        setStatus(`Could not evaluate: "${raw}"`, 'error');
+        spinnerEl.classList.remove('active');
+        return;
+      }
+
+      setStatus(`${raw} ${evalResult}`, 'result');
+      drawResult(evalResult);
+
+    } catch (err) {
+      console.error(err);
+      setStatus('Recognition failed', 'error');
+    }
+    spinnerEl.classList.remove('active');
+  }
+
+  function drawResult(value) {
+    rc.clearRect(0, 0, wrap.clientWidth, wrap.clientHeight);
+
+    const x = Math.min(bbox.maxX + 16, wrap.clientWidth - 10);
+    const y = (bbox.minY + bbox.maxY) / 2;
+
+    const fontSize = Math.max(20, Math.min(36, bbox.maxY - bbox.minY));
+    rc.font         = `600 ${fontSize}px -apple-system, system-ui, sans-serif`;
+    rc.fillStyle    = '#6ab000';
+    rc.textBaseline = 'middle';
+    rc.fillText(value, x, y);
+  }
+
+  // ── Init ──
+  window.addEventListener('resize', () => { resizeCanvases(); });
+  // Wait for layout, then init
+  setTimeout(() => { resizeCanvases(); }, 0);
+})();
 </script>
 </body>
 </html>
